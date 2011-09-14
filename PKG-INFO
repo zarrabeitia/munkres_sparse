@@ -1,0 +1,16 @@
+Metadata-Version: 1.0
+Name: sparse_munkres
+Version: 0.1
+Summary: kuhn-munkres algorithm for the Assignment Problem with an incomplete cost matrix
+Author: Luis A. Zarrabeitia
+Author-email: zarrabeitia at gmail dot com
+License: GPLv2
+Description: 
+
+    Implementation of the sparse kuhn-munkres algorithm.
+    For a general description of the full munkres algorithm, see
+    http://csclab.murraystate.edu/bob.pilgrim/445/munkres.html
+    This implementation assumes a non-complete graph and stores
+    the elements in a sparse matrix, following the ideas outlined
+    in (reference to the Sailor Assignment Problem paper)
+
