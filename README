@@ -1,0 +1,6 @@
+Implementation of the sparse kuhn-munkres algorithm.
+For a general description of the full munkres algorithm, see
+http://csclab.murraystate.edu/bob.pilgrim/445/munkres.html
+This implementation assumes a non-complete graph and stores
+the elements in a sparse matrix, following the ideas outlined
+in (reference to the Sailor Assignment Problem paper)
