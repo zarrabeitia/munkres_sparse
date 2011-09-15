@@ -34,6 +34,7 @@ class MunkresMatrix(object):
     def __init__(self, values):
         assert all(value>=0 for i, j, value in values)
         bigvalue = 1e10
+        bigvalue = max(value for i, j, value in values) * 1e10
         rowindices = list(set(i for (i, j, value) in values))
         colindices = list(set(j for (i, j, value) in values))
         rowmap = dict((k, v) for v, k in enumerate(rowindices))
