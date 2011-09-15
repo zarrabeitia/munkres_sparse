@@ -25,6 +25,7 @@ __all__ = "munkres"
 # using float("inf")
 INFINITY = 1e1000
 
+
 class MunkresMatrix(object):
     """
     Auxiliary class.
@@ -32,51 +33,51 @@ class MunkresMatrix(object):
     The rows and columns are remapped (to avoid having emtpy rows and columns).
     """
     def __init__(self, values):
-        assert all(value>=0 for i, j, value in values)
+        assert all(value >= 0 for i, j, value in values)
         bigvalue = 1e10
         rowindices = list(set(i for (i, j, value) in values))
         colindices = list(set(j for (i, j, value) in values))
         rowmap = dict((k, v) for v, k in enumerate(rowindices))
         colmap = dict((k, v) for v, k in enumerate(colindices))
         self.transposed = False
-        self.values = [(rowmap[i], colmap[j], value) 
+        self.values = [(rowmap[i], colmap[j], value)
                         for (i, j, value) in values]
         self.values.sort()
         self.rowmap = rowindices
         self.colmap = colindices
         self.nrows = len(rowindices)
         self.real_columns = len(colindices)
-        self.ncols = len(colindices)+self.nrows
-        # Ensure there is a feasible but very undesireable solution 
+        self.ncols = len(colindices) + self.nrows
+        # Ensure there is a feasible but very undesireable solution
         # covering the rows
         for i in xrange(self.nrows):
-            self.values.append((i, self.real_columns+i, bigvalue))        
+            self.values.append((i, self.real_columns + i, bigvalue))
         self.K = self.nrows
         self.rowindices = xrange(self.nrows)
         self.colindices = xrange(self.ncols)
-        self.row_adds = [0] * self.nrows 
+        self.row_adds = [0] * self.nrows
         self.column_adds = [0] * self.ncols
- 
+
     def remap(self, indices):
         """
         Transform the list of indices back to the original
         domain.
         """
-        return [(self.rowmap[i], self.colmap[j]) 
+        return [(self.rowmap[i], self.colmap[j])
                 for i, j in indices if j < self.real_columns]
-    
+
     def row(self, rowindex):
         """
         Returns the list of (value, column) in row rowindex
         """
-        return ((value + self.column_adds[j] + self.row_adds[i], j) 
+        return ((value + self.column_adds[j] + self.row_adds[i], j)
                 for i, j, value in self.values if i == rowindex)
 
     def get_values(self):
         """
         Returns the current values of the matrix.
         """
-        return ((i, j, value+self.column_adds[j]+self.row_adds[i]) 
+        return ((i, j, value + self.column_adds[j] + self.row_adds[i])
                 for i, j, value in self.values)
 
     def add_column(self, colindex, value):
@@ -84,38 +85,39 @@ class MunkresMatrix(object):
         Adds value to all the elements of column colindex.
         """
         self.column_adds[colindex] += value
-        
+
     def add_row(self, rowindex, value):
         """
         Adds value to all the elements of row rowindex.
         """
         self.row_adds[rowindex] += value
-                
+
     def zeros(self):
         """
         Returns the indices (row, col) of all zero elements in the
         matrix. An element is considered to be zero if abs(value) <= 1e-6
         """
-        return [(i, j) 
+        return [(i, j)
                 for (i, j, value) in self.get_values() if abs(value) <= 1e-6]
+
 
 class Munkres(object):
     """
     Auxiliary class. Use the top level munkres method instead.
     """
     def __init__(self, values):
-        """ 
-        Initialize the munkres. 
-        values: list of non-infinite values entries of the cost matrix 
-                [(i,j,value)...] 
-        """ 
+        """
+        Initialize the munkres.
+        values: list of non-infinite values entries of the cost matrix
+                [(i,j,value)...]
+        """
         self.matrix = MunkresMatrix(values)
         self.starred = set()
         self.primed = set()
         self.covered_columns = [False] * self.matrix.ncols
         self.covered_rows = [False] * self.matrix.nrows
         self.last_primed = None
- 
+
     def munkres(self):
         """
         Executes the munkres algorithm.
@@ -124,7 +126,7 @@ class Munkres(object):
         next_step = self._step_1
         while next_step:
             next_step = next_step()
-        
+
         # Transform the mapping back to the input domain
         return self.matrix.remap(self.starred)
 
@@ -142,8 +144,8 @@ class Munkres(object):
 
     def _step_2(self):
         """
-        Find a zero (Z) in the resulting matrix.  If there is no starred zero 
-        in its row or column, star Z. 
+        Find a zero (Z) in the resulting matrix.  If there is no starred zero
+        in its row or column, star Z.
         Repeat for each element in the matrix. Go to Step 3.
         """
         zeros = self.matrix.zeros()
@@ -154,11 +156,11 @@ class Munkres(object):
             else:
                 self.starred.add((i, j))
         return self._step_3
-        
+
     def _step_3(self):
         """
         Cover each column containing a starred zero.  If K columns are covered,
-        the starred zeros describe a complete set of unique assignments.  In 
+        the starred zeros describe a complete set of unique assignments.  In
         this case, Go to DONE, otherwise, Go to Step 4.
         """
         for (_, j) in self.starred:
@@ -178,13 +180,13 @@ class Munkres(object):
             if not self.covered_columns[j] and not self.covered_rows[i]:
                 return (i, j)
         return None
-        
+
     def _step_4(self):
         """
-        Find a noncovered zero and prime it.  If there is no starred zero in 
-        the row containing this primed zero, Go to Step 5.  Otherwise, cover 
-        this row and uncover the column containing the starred zero. Continue 
-        in this manner until there are no uncovered zeros left. Save the 
+        Find a noncovered zero and prime it.  If there is no starred zero in
+        the row containing this primed zero, Go to Step 5.  Otherwise, cover
+        this row and uncover the column containing the starred zero. Continue
+        in this manner until there are no uncovered zeros left. Save the
         smallest uncovered value and Go to Step 6.
         """
         done = False
@@ -204,18 +206,18 @@ class Munkres(object):
             else:
                 done = True
         return self._step_6
-    
+
     def _step_5(self):
         """
         Construct a series of alternating primed and starred zeros as follows.
-        Let Z0 represent the uncovered primed zero found in Step 4. Let Z1 
-        denote the starred zero in the column of Z0 (if any). Let Z2 denote 
+        Let Z0 represent the uncovered primed zero found in Step 4. Let Z1
+        denote the starred zero in the column of Z0 (if any). Let Z2 denote
         the primed zero in the row of Z1 (there will always be one). Continue
-        until the series terminates at a primed zero that has no starred zero in
-        its column.  Unstar each starred zero of the series, star each primed 
-        zero of the series, erase all primes and uncover every line in the 
-        matrix. Return to Step 3.
-        """ 
+        until the series terminates at a primed zero that has no starred zero
+        in its column.  Unstar each starred zero of the series, star each
+        primed zero of the series, erase all primes and uncover every line in
+        the matrix. Return to Step 3.
+        """
         last_primed = self.last_primed
         last_starred = None
         primed = [last_primed]
@@ -239,7 +241,7 @@ class Munkres(object):
         self.primed.clear()
         for i in xrange(len(self.covered_rows)):
             self.covered_rows[i] = False
-        
+
         return self._step_3
 
     def _step_6(self):
@@ -250,7 +252,7 @@ class Munkres(object):
         """
         minval = INFINITY
         for i, j, value in self.matrix.get_values():
-            covered =  self.covered_rows[i] or self.covered_columns[j]
+            covered = self.covered_rows[i] or self.covered_columns[j]
             if not covered and minval > value:
                 minval = value
         assert 1e-6 < abs(minval) < INFINITY
@@ -264,6 +266,8 @@ class Munkres(object):
 
 import random
 import itertools
+
+
 def random_test_munkres(nrows, ncols):
     """
     Naive test for the munkres implementation.
@@ -271,7 +275,7 @@ def random_test_munkres(nrows, ncols):
     result with the exahustive search.
     nrows, ncols: number of rows and columns of the generated matrix
     """
-    values = [ (i, j, random.random())
+    values = [(i, j, random.random())
                 for i in xrange(nrows)
                 for j in xrange(ncols) if random.random() > .8]
     values_dict = dict(((i, j), v) for i, j, v in values)
@@ -296,14 +300,13 @@ def random_test_munkres(nrows, ncols):
                 print "munkres weight", munkres_weight
                 raise Exception()
     return munkres_weight
-    
+
+
 def munkres(costs):
     """
     Entry method to solve the assignment problem.
-    costs: list of non-infinite values entries of the cost matrix 
-            [(i,j,value)...] 
+    costs: list of non-infinite values entries of the cost matrix
+            [(i,j,value)...]
     """
     solver = Munkres(costs)
     return solver.munkres()
-
-
