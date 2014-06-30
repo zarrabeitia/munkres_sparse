@@ -4,7 +4,8 @@ For a general description of the full munkres algorithm, see
 http://csclab.murraystate.edu/bob.pilgrim/445/munkres.html
 This implementation assumes a non-complete graph and stores
 the elements in a sparse matrix, following the ideas outlined
-in (reference to the Sailor Assignment Problem paper)
+in http://dl.acm.org/citation.cfm?id=1388969.1389035
+(Sailor Assignment Problem)
 """
 
 __author__ = "Luis A. Zarrabeitia"
